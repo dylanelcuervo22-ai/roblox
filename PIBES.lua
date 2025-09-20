@@ -62,6 +62,43 @@ devilStroke.Color = Color3.fromRGB(255, 255, 255)
 devilStroke.Thickness = 1
 devilStroke.Parent = devilButton
 
+-- Make Devil Button Draggable
+local devilDragging = false
+local devilDragStart = nil
+local devilStartPos = nil
+
+devilButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        devilDragging = true
+        devilDragStart = input.Position
+        devilStartPos = devilButton.Position
+    end
+end)
+
+devilButton.InputChanged:Connect(function(input)
+    if devilDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - devilDragStart
+        devilButton.Position = UDim2.new(devilStartPos.X.Scale, devilStartPos.X.Offset + delta.X, devilStartPos.Y.Scale, devilStartPos.Y.Offset + delta.Y)
+    end
+end)
+
+devilButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        devilDragging = false
+    end
+end)
+
+-- Hover Effect for Devil Button
+devilButton.MouseEnter:Connect(function()
+    devilButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    devilButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+end)
+
+devilButton.MouseLeave:Connect(function()
+    devilButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    devilButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+end)
+
 -- Make GUI Draggable
 local dragging = false
 local dragStart = nil
@@ -92,7 +129,7 @@ end)
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 25)
 title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2"
+title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2.1"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 title.Font = Enum.Font.GothamBold
@@ -159,7 +196,15 @@ local function animateGui(show)
         })
         tween:Play()
     else
-        frame.Visible = false
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.In)
+        local tween = TweenService:Create(frame, tweenInfo, {
+            Size = UDim2.new(0, 325 * 0.8, 0, 160 * 0.8),
+            BackgroundTransparency = 0.5
+        })
+        tween.Completed:Connect(function()
+            frame.Visible = false
+        end)
+        tween:Play()
     end
 end
 
