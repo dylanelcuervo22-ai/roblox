@@ -228,7 +228,7 @@ end)
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 25)
 title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2.1"
+title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2.3"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 title.Font = Enum.Font.GothamBold
@@ -874,3 +874,4 @@ end)
 game:BindToClose(function()
     stopEsp()
 end)
+
