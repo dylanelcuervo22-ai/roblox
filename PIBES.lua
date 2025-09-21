@@ -15,41 +15,101 @@ screenGui.Parent = player.PlayerGui
 screenGui.Name = "LosPibesGUI"
 screenGui.ResetOnSpawn = false
 
+-- Loading Screen
+local loadingFrame = Instance.new("Frame")
+loadingFrame.Size = UDim2.new(0, 300, 0, 100)
+loadingFrame.Position = UDim2.new(0.5, -150, 0.5, -50)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+loadingFrame.BackgroundTransparency = 0.2
+loadingFrame.BorderSizePixel = 0
+loadingFrame.Parent = screenGui
+
+local loadingCorner = Instance.new("UICorner")
+loadingCorner.CornerRadius = UDim.new(0, 10)
+loadingCorner.Parent = loadingFrame
+
+local loadingText = Instance.new("TextLabel")
+loadingText.Size = UDim2.new(1, 0, 0, 30)
+loadingText.Position = UDim2.new(0, 0, 0, 10)
+loadingText.Text = "Loading..."
+loadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadingText.BackgroundTransparency = 1
+loadingText.Font = Enum.Font.GothamBold
+loadingText.TextSize = 18
+loadingText.Parent = loadingFrame
+
+-- Pulsing animation for loading text
+local function pulseLoadingText()
+    local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+    local tween = TweenService:Create(loadingText, tweenInfo, {
+        TextTransparency = 0.2
+    })
+    tween:Play()
+end
+
+local progressBarFrame = Instance.new("Frame")
+progressBarFrame.Size = UDim2.new(0.9, 0, 0, 10)
+progressBarFrame.Position = UDim2.new(0.05, 0, 0, 50)
+progressBarFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+progressBarFrame.BorderSizePixel = 0
+progressBarFrame.Parent = loadingFrame
+
+local progressBarCorner = Instance.new("UICorner")
+progressBarCorner.CornerRadius = UDim.new(0, 5)
+progressBarCorner.Parent = progressBarFrame
+
+local progressBar = Instance.new("Frame")
+progressBar.Size = UDim2.new(0, 0, 1, 0)
+progressBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+progressBar.BorderSizePixel = 0
+progressBar.Parent = progressBarFrame
+
+local progressBarInnerCorner = Instance.new("UICorner")
+progressBarInnerCorner.CornerRadius = UDim.new(0, 5)
+progressBarInnerCorner.Parent = progressBar
+
+local progressBarStroke = Instance.new("UIStroke")
+progressBarStroke.Color = Color3.fromRGB(255, 255, 255)
+progressBarStroke.Thickness = 1.5
+progressBarStroke.Transparency = 0.7
+progressBarStroke.Parent = progressBar
+
+-- Main GUI Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 325, 0, 160)
+frame.Size = UDim2.new(0, 0, 0, 0)
 frame.Position = UDim2.new(0.5, -162.5, 0.5, -80)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BorderSizePixel = 0
-frame.BackgroundTransparency = 0.1
+frame.BackgroundTransparency = 1
 frame.ClipsDescendants = true
+frame.Visible = false
 frame.Parent = screenGui
 
--- Add UICorner for rounded edges
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0, 8)
 uiCorner.Parent = frame
 
--- Add UIStroke for rainbow border
 local uiStroke = Instance.new("UIStroke")
 uiStroke.Thickness = 1.5
 uiStroke.Parent = frame
 
--- Rainbow effect for UIStroke
 local function updateRainbow()
-    local hue = (tick() % 5) / 5 -- Cycle over 5 seconds
-    uiStroke.Color = Color3.fromHSV(hue, 1, 1) -- Full saturation and value for vibrant colors
+    local hue = (tick() % 5) / 5
+    uiStroke.Color = Color3.fromHSV(hue, 1, 1)
 end
 RunService.Heartbeat:Connect(updateRainbow)
 
--- Devil Emoji Button (Toggle Indicator)
+-- Devil Emoji Button
 local devilButton = Instance.new("TextButton")
-devilButton.Size = UDim2.new(0, 40, 0, 40)
-devilButton.Position = UDim2.new(0, 10, 0, 10) -- Moved to top-left, offset by 10 pixels
+devilButton.Size = UDim2.new(0, 0, 0, 0)
+devilButton.Position = UDim2.new(0, 10, 0, 10)
 devilButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 devilButton.Text = "😈"
 devilButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 devilButton.Font = Enum.Font.GothamBold
 devilButton.TextSize = 20
+devilButton.BackgroundTransparency = 1
+devilButton.TextTransparency = 1
 devilButton.Visible = false
 devilButton.Parent = screenGui
 
@@ -61,6 +121,40 @@ local devilStroke = Instance.new("UIStroke")
 devilStroke.Color = Color3.fromRGB(255, 255, 255)
 devilStroke.Thickness = 1
 devilStroke.Parent = devilButton
+
+-- Devil Button Animation
+local function animateDevilButton(show)
+    if show then
+        devilButton.Visible = true
+        devilButton.Size = UDim2.new(0, 0, 0, 0)
+        devilButton.BackgroundTransparency = 1
+        devilButton.TextTransparency = 1
+        local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        local tween = TweenService:Create(devilButton, tweenInfo, {
+            Size = UDim2.new(0, 40, 0, 40),
+            BackgroundTransparency = 0,
+            TextTransparency = 0,
+            Rotation = 0
+        })
+        tween:Play()
+        local wiggleInfo = TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, 2, true)
+        local wiggleTween = TweenService:Create(devilButton, wiggleInfo, {
+            Rotation = 10
+        })
+        wiggleTween:Play()
+    else
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.In)
+        local tween = TweenService:Create(devilButton, tweenInfo, {
+            Size = UDim2.new(0, 0, 0, 0),
+            BackgroundTransparency = 1,
+            TextTransparency = 1
+        })
+        tween.Completed:Connect(function()
+            devilButton.Visible = false
+        end)
+        tween:Play()
+    end
+end
 
 -- Make Devil Button Draggable
 local devilDragging = false
@@ -88,7 +182,6 @@ devilButton.InputEnded:Connect(function(input)
     end
 end)
 
--- Hover Effect for Devil Button
 devilButton.MouseEnter:Connect(function()
     devilButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     devilButton.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -129,7 +222,7 @@ end)
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 25)
 title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2.1"
+title.Text = "LOS PIBES 😈 By DylanElCuervo22 V3"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 title.Font = Enum.Font.GothamBold
@@ -168,7 +261,7 @@ uiListLayout2.VerticalAlignment = Enum.VerticalAlignment.Center
 uiListLayout2.Padding = UDim.new(0, 5)
 uiListLayout2.Parent = buttonContainer2
 
--- Input Container (Horizontal Layout for Fly Speed, Walk Speed, Jump Power, Gravity)
+-- Input Container
 local inputContainer = Instance.new("Frame")
 inputContainer.Size = UDim2.new(1, -10, 0, 80)
 inputContainer.Position = UDim2.new(0, 5, 0, 100)
@@ -183,13 +276,43 @@ inputListLayout.Padding = UDim.new(0, 5)
 inputListLayout.Wraps = true
 inputListLayout.Parent = inputContainer
 
+-- Loading Animation
+local function playLoadingAnimation(callback)
+    pulseLoadingText()
+    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(progressBar, tweenInfo, {
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+    local strokeTween = TweenService:Create(progressBarStroke, tweenInfo, {
+        Transparency = 0.3
+    })
+    tween:Play()
+    strokeTween:Play()
+    tween.Completed:Connect(function()
+        local fadeOutInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        local fadeOutTween = TweenService:Create(loadingFrame, fadeOutInfo, {
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0.5, -150, 0.5, -100)
+        })
+        local textFadeTween = TweenService:Create(loadingText, fadeOutInfo, {
+            TextTransparency = 1
+        })
+        fadeOutTween:Play()
+        textFadeTween:Play()
+        fadeOutTween.Completed:Connect(function()
+            loadingFrame.Visible = false
+            callback()
+        end)
+    end)
+end
+
 -- GUI Animation
 local function animateGui(show)
     if show then
         frame.Visible = true
-        frame.Size = UDim2.new(0, 325 * 0.8, 0, 160 * 0.8)
-        frame.BackgroundTransparency = 0.5
-        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        frame.Size = UDim2.new(0, 0, 0, 0)
+        frame.BackgroundTransparency = 1
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         local tween = TweenService:Create(frame, tweenInfo, {
             Size = UDim2.new(0, 325, 0, 160),
             BackgroundTransparency = 0.1
@@ -198,8 +321,8 @@ local function animateGui(show)
     else
         local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.In)
         local tween = TweenService:Create(frame, tweenInfo, {
-            Size = UDim2.new(0, 325 * 0.8, 0, 160 * 0.8),
-            BackgroundTransparency = 0.5
+            Size = UDim2.new(0, 0, 0, 0),
+            BackgroundTransparency = 1
         })
         tween.Completed:Connect(function()
             frame.Visible = false
@@ -208,12 +331,18 @@ local function animateGui(show)
     end
 end
 
+-- Initialize Loading and GUI
+playLoadingAnimation(function()
+    animateGui(true)
+    animateDevilButton(false)
+end)
+
 -- RShift Toggle and Devil Button Logic
 local isGuiVisible = true
 local function toggleGui()
     isGuiVisible = not isGuiVisible
     animateGui(isGuiVisible)
-    devilButton.Visible = not isGuiVisible
+    animateDevilButton(not isGuiVisible)
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
