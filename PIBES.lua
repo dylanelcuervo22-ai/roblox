@@ -15,51 +15,96 @@ screenGui.Parent = player.PlayerGui
 screenGui.Name = "LosPibesGUI"
 screenGui.ResetOnSpawn = false
 
--- Cartelito "Hola Fau😂👌"
-local welcomeFrame = Instance.new("Frame")
-welcomeFrame.Size = UDim2.new(0, 150, 0, 75) -- Tamaño reducido
-welcomeFrame.Position = UDim2.new(0.5, -75, 0.5, -37.5) -- Centrado
-welcomeFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-welcomeFrame.BackgroundTransparency = 0.2
-welcomeFrame.BorderSizePixel = 0
-welcomeFrame.Parent = screenGui
+-- Cartelito 1: "Hola Fau😂👌"
+local welcomeFrame1 = Instance.new("Frame")
+welcomeFrame1.Size = UDim2.new(0, 150, 0, 75)
+welcomeFrame1.Position = UDim2.new(0.5, -75, 0.4, -37.5) -- Un poco más arriba
+welcomeFrame1.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+welcomeFrame1.BackgroundTransparency = 0.2
+welcomeFrame1.BorderSizePixel = 0
+welcomeFrame1.Parent = screenGui
 
-local welcomeCorner = Instance.new("UICorner")
-welcomeCorner.CornerRadius = UDim.new(0, 8)
-welcomeCorner.Parent = welcomeFrame
+local welcomeCorner1 = Instance.new("UICorner")
+welcomeCorner1.CornerRadius = UDim.new(0, 8)
+welcomeCorner1.Parent = welcomeFrame1
 
--- Bordado multicolor para el cartel
-local welcomeStroke = Instance.new("UIStroke")
-welcomeStroke.Thickness = 1.5
-welcomeStroke.Parent = welcomeFrame
+local welcomeStroke1 = Instance.new("UIStroke")
+welcomeStroke1.Thickness = 1.5
+welcomeStroke1.Parent = welcomeFrame1
 
-local welcomeLabel = Instance.new("TextLabel")
-welcomeLabel.Size = UDim2.new(1, 0, 0.7, 0)
-welcomeLabel.Position = UDim2.new(0, 0, 0, 0)
-welcomeLabel.Text = "Hola Fau😂👌"
-welcomeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-welcomeLabel.BackgroundTransparency = 1
-welcomeLabel.Font = Enum.Font.GothamBold
-welcomeLabel.TextSize = 20
-welcomeLabel.TextScaled = true
-welcomeLabel.Parent = welcomeFrame
+local welcomeLabel1 = Instance.new("TextLabel")
+welcomeLabel1.Size = UDim2.new(1, 0, 0.7, 0)
+welcomeLabel1.Position = UDim2.new(0, 0, 0, 0)
+welcomeLabel1.Text = "Hola Fau😂👌"
+welcomeLabel1.TextColor3 = Color3.fromRGB(255, 255, 255)
+welcomeLabel1.BackgroundTransparency = 1
+welcomeLabel1.Font = Enum.Font.GothamBold
+welcomeLabel1.TextSize = 20
+welcomeLabel1.TextScaled = true
+welcomeLabel1.Parent = welcomeFrame1
 
-local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 20, 0, 20) -- Botón "X" más pequeño
-closeButton.Position = UDim2.new(1, -30, 0, 5) -- Ajustado
-closeButton.Text = "X"
-closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.Font = Enum.Font.GothamBold
-closeButton.TextSize = 12 -- Texto más pequeño
-closeButton.Parent = welcomeFrame
+local closeButton1 = Instance.new("TextButton")
+closeButton1.Size = UDim2.new(0, 20, 0, 20)
+closeButton1.Position = UDim2.new(1, -30, 0, 5)
+closeButton1.Text = "X"
+closeButton1.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton1.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton1.Font = Enum.Font.GothamBold
+closeButton1.TextSize = 12
+closeButton1.Parent = welcomeFrame1
 
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 6)
-closeCorner.Parent = closeButton
+local closeCorner1 = Instance.new("UICorner")
+closeCorner1.CornerRadius = UDim.new(0, 6)
+closeCorner1.Parent = closeButton1
 
-closeButton.MouseButton1Click:Connect(function()
-    welcomeFrame:Destroy()
+closeButton1.MouseButton1Click:Connect(function()
+    welcomeFrame1:Destroy()
+end)
+
+-- Cartelito 2: "De los mejores jaciers para los mejores haciers"
+local welcomeFrame2 = Instance.new("Frame")
+welcomeFrame2.Size = UDim2.new(0, 150, 0, 75)
+welcomeFrame2.Position = UDim2.new(0.5, -75, 0.6, -37.5) -- Un poco más abajo
+welcomeFrame2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+welcomeFrame2.BackgroundTransparency = 0.2
+welcomeFrame2.BorderSizePixel = 0
+welcomeFrame2.Parent = screenGui
+
+local welcomeCorner2 = Instance.new("UICorner")
+welcomeCorner2.CornerRadius = UDim.new(0, 8)
+welcomeCorner2.Parent = welcomeFrame2
+
+local welcomeStroke2 = Instance.new("UIStroke")
+welcomeStroke2.Thickness = 1.5
+welcomeStroke2.Parent = welcomeFrame2
+
+local welcomeLabel2 = Instance.new("TextLabel")
+welcomeLabel2.Size = UDim2.new(1, 0, 0.7, 0)
+welcomeLabel2.Position = UDim2.new(0, 0, 0, 0)
+welcomeLabel2.Text = "De los mejores jaciers para los mejores haciers"
+welcomeLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
+welcomeLabel2.BackgroundTransparency = 1
+welcomeLabel2.Font = Enum.Font.GothamBold
+welcomeLabel2.TextSize = 20
+welcomeLabel2.TextScaled = true
+welcomeLabel2.Parent = welcomeFrame2
+
+local closeButton2 = Instance.new("TextButton")
+closeButton2.Size = UDim2.new(0, 20, 0, 20)
+closeButton2.Position = UDim2.new(1, -30, 0, 5)
+closeButton2.Text = "X"
+closeButton2.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton2.Font = Enum.Font.GothamBold
+closeButton2.TextSize = 12
+closeButton2.Parent = welcomeFrame2
+
+local closeCorner2 = Instance.new("UICorner")
+closeCorner2.CornerRadius = UDim.new(0, 6)
+closeCorner2.Parent = closeButton2
+
+closeButton2.MouseButton1Click:Connect(function()
+    welcomeFrame2:Destroy()
 end)
 
 local frame = Instance.new("Frame")
@@ -81,13 +126,16 @@ local uiStroke = Instance.new("UIStroke")
 uiStroke.Thickness = 1.5
 uiStroke.Parent = frame
 
--- Rainbow effect for UIStroke (main frame and welcome frame)
+-- Rainbow effect for UIStroke (main frame and both welcome frames)
 local function updateRainbow()
     local hue = (tick() % 5) / 5 -- Cycle over 5 seconds
     local color = Color3.fromHSV(hue, 1, 1) -- Full saturation and value for vibrant colors
     uiStroke.Color = color
-    if welcomeFrame and welcomeFrame.Parent then -- Update welcomeStroke if it exists
-        welcomeStroke.Color = color
+    if welcomeFrame1 and welcomeFrame1.Parent then
+        welcomeStroke1.Color = color
+    end
+    if welcomeFrame2 and welcomeFrame2.Parent then
+        welcomeStroke2.Color = color
     end
 end
 RunService.Heartbeat:Connect(updateRainbow)
@@ -180,7 +228,7 @@ end)
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 25)
 title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2.2"
+title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2.1"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 title.Font = Enum.Font.GothamBold
