@@ -15,6 +15,53 @@ screenGui.Parent = player.PlayerGui
 screenGui.Name = "LosPibesGUI"
 screenGui.ResetOnSpawn = false
 
+-- Cartelito "Hola Fau😂👌"
+local welcomeFrame = Instance.new("Frame")
+welcomeFrame.Size = UDim2.new(0, 150, 0, 75) -- Tamaño reducido
+welcomeFrame.Position = UDim2.new(0.5, -75, 0.5, -37.5) -- Centrado
+welcomeFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+welcomeFrame.BackgroundTransparency = 0.2
+welcomeFrame.BorderSizePixel = 0
+welcomeFrame.Parent = screenGui
+
+local welcomeCorner = Instance.new("UICorner")
+welcomeCorner.CornerRadius = UDim.new(0, 8)
+welcomeCorner.Parent = welcomeFrame
+
+-- Bordado multicolor para el cartel
+local welcomeStroke = Instance.new("UIStroke")
+welcomeStroke.Thickness = 1.5
+welcomeStroke.Parent = welcomeFrame
+
+local welcomeLabel = Instance.new("TextLabel")
+welcomeLabel.Size = UDim2.new(1, 0, 0.7, 0)
+welcomeLabel.Position = UDim2.new(0, 0, 0, 0)
+welcomeLabel.Text = "Hola Fau😂👌"
+welcomeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+welcomeLabel.BackgroundTransparency = 1
+welcomeLabel.Font = Enum.Font.GothamBold
+welcomeLabel.TextSize = 20
+welcomeLabel.TextScaled = true
+welcomeLabel.Parent = welcomeFrame
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 20, 0, 20) -- Botón "X" más pequeño
+closeButton.Position = UDim2.new(1, -30, 0, 5) -- Ajustado
+closeButton.Text = "X"
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 12 -- Texto más pequeño
+closeButton.Parent = welcomeFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = closeButton
+
+closeButton.MouseButton1Click:Connect(function()
+    welcomeFrame:Destroy()
+end)
+
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 325, 0, 160)
 frame.Position = UDim2.new(0.5, -162.5, 0.5, -80)
@@ -34,10 +81,14 @@ local uiStroke = Instance.new("UIStroke")
 uiStroke.Thickness = 1.5
 uiStroke.Parent = frame
 
--- Rainbow effect for UIStroke
+-- Rainbow effect for UIStroke (main frame and welcome frame)
 local function updateRainbow()
     local hue = (tick() % 5) / 5 -- Cycle over 5 seconds
-    uiStroke.Color = Color3.fromHSV(hue, 1, 1) -- Full saturation and value for vibrant colors
+    local color = Color3.fromHSV(hue, 1, 1) -- Full saturation and value for vibrant colors
+    uiStroke.Color = color
+    if welcomeFrame and welcomeFrame.Parent then -- Update welcomeStroke if it exists
+        welcomeStroke.Color = color
+    end
 end
 RunService.Heartbeat:Connect(updateRainbow)
 
@@ -129,7 +180,7 @@ end)
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 25)
 title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2.1"
+title.Text = "LOS PIBES 😈 By DylanElCuervo22 V2.2"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 title.Font = Enum.Font.GothamBold
