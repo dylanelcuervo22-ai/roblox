@@ -1,22 +1,30 @@
--- Script de Vuelo Simple para Roblox (Mobile-Friendly)
--- Autor: Grok (basado en mecánicas estándar de Roblox)
+-- Script de Vuelo Mejorado para Roblox (Mobile + PC, Estilo PC)
+-- Autor: Grok (mejorado con controles nativos y botones auto para mobile)
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
+local ContextActionService = game:GetService("ContextActionService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- Módulo para movimiento (funciona en PC y mobile)
+local PlayerModule = require(player.PlayerScripts:WaitForChild("PlayerModule"))
+local ControlModule = PlayerModule:GetControls()
+local getMoveVector = ControlModule:GetMoveVector
+
 -- Variables de vuelo
 local flying = false
-local speed = 50  -- Velocidad de vuelo (ajusta según prefieras)
+local speed = 50  -- Velocidad base (ajusta aquí)
+local verticalSpeed = 0  -- Para up/down
 local bodyVelocity = nil
 local bodyGyro = nil
 local connection = nil
+local upActionId = "FlyUp"
+local downActionId = "FlyDown"
 
--- Crear GUI
+-- Crear GUI toggle
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "FlyGui"
 screenGui.Parent = playerGui
@@ -41,10 +49,13 @@ local function toggleFlying()
     local character = player.Character
     if not character then return end
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return end
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoidRootPart or not humanoid then return end
     
     if flying then
         -- Iniciar vuelo
+        humanoid.PlatformStand = true
+        
         bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
         bodyVelocity.Velocity = Vector3.new(0, 0, 0)
@@ -55,41 +66,42 @@ local function toggleFlying()
         bodyGyro.CFrame = humanoidRootPart.CFrame
         bodyGyro.Parent = humanoidRootPart
         
-        -- Conexión para movimiento (basado en cámara para mobile)
+        -- Bind acciones para vertical (crea botones en mobile)
+        ContextActionService:BindAction(upActionId, function(actionName, inputState, inputObject)
+            if inputState == Enum.UserInputState.Begin then
+                verticalSpeed = speed
+            elseif inputState == Enum.UserInputState.End then
+                verticalSpeed = 0
+            end
+            return Enum.ContextActionResult.Pass
+        end, true, Enum.KeyCode.Space)  -- true crea botón mobile
+        
+        ContextActionService:BindAction(downActionId, function(actionName, inputState, inputObject)
+            if inputState == Enum.UserInputState.Begin then
+                verticalSpeed = -speed
+            elseif inputState == Enum.UserInputState.End then
+                verticalSpeed = 0
+            end
+            return Enum.ContextActionResult.Pass
+        end, true, Enum.KeyCode.LeftShift)
+        
+        -- Conexión para movimiento (usa controles nativos para horizontal)
         connection = RunService.Heartbeat:Connect(function()
             if not flying then return end
             
             local camera = workspace.CurrentCamera
-            local moveDirection = camera.CFrame.LookVector * speed
+            local moveVector = getMoveVector()  -- Captura WASD/joystick (X: left/right, Z: forward/back)
             
-            -- Ajuste vertical simple: usa toque para subir/bajar (simulado)
-            if UserInputService.TouchEnabled then
-                -- En mobile, detecta toques para vertical (puedes expandir con más GUIs si quieres)
-                local touchInput = UserInputService:GetLastInputType()
-                if touchInput == Enum.UserInputType.Touch then
-                    moveDirection = moveDirection + Vector3.new(0, 10, 0)  -- Subir con toque (ajusta)
-                end
-            end
+            -- Movimiento horizontal relativo a cámara
+            local cameraCFrame = camera.CFrame
+            local horizontalMove = cameraCFrame:VectorToWorldSpace(Vector3.new(moveVector.X, 0, moveVector.Z))
             
-            -- Para PC: soporta teclas básicas (W/S para adelante/atrás, Space/Shift para up/down)
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                moveDirection = moveDirection + camera.CFrame.LookVector * speed
-            elseif UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                moveDirection = moveDirection - camera.CFrame.LookVector * speed
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-                moveDirection = moveDirection + Vector3.new(0, speed, 0)
-            elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-                moveDirection = moveDirection - Vector3.new(0, speed, 0)
-            end
+            -- Vertical separado
+            local fullVelocity = horizontalMove * speed + Vector3.new(0, verticalSpeed, 0)
             
-            bodyVelocity.Velocity = moveDirection
-            bodyGyro.CFrame = camera.CFrame
+            bodyVelocity.Velocity = fullVelocity
+            bodyGyro.CFrame = cameraCFrame  -- Sigue la cámara
         end)
-        
-        -- Opcional: Animación de activación
-        local tween = TweenService:Create(toggleButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 130, 0, 55)})
-        tween:Play()
         
     else
         -- Detener vuelo
@@ -97,32 +109,31 @@ local function toggleFlying()
         if bodyVelocity then bodyVelocity:Destroy() end
         if bodyGyro then bodyGyro:Destroy() end
         
-        -- Reset posición si es necesario
-        humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+        -- Unbind acciones
+        ContextActionService:UnbindAction(upActionId)
+        ContextActionService:UnbindAction(downActionId)
         
-        -- Animación de desactivación
-        local tween = TweenService:Create(toggleButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 120, 0, 50)})
-        tween:Play()
+        humanoid.PlatformStand = false
+        humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
     end
 end
 
--- Conectar botón
+-- Conectar toggle (click o toque)
 toggleButton.MouseButton1Click:Connect(toggleFlying)
--- Para mobile: soporta toque
 toggleButton.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
         toggleFlying()
     end
 end)
 
--- Manejar respawn del personaje
+-- Manejar respawn
 player.CharacterAdded:Connect(function()
     if flying then
-        wait(1)  -- Espera a que cargue
-        toggleFlying()  -- Reactiva si estaba on
-        wait(0.1)
-        toggleFlying()  -- Toggle off y on para resetear
+        wait(1)
+        -- Reactiva
+        flying = false  -- Reset
+        toggleFlying()
     end
 end)
 
-print("Script de Vuelo cargado. Toca el botón para activar!")
+print("Script de Vuelo Mejorado cargado. Activa con el botón!")
