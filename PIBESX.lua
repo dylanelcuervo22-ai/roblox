@@ -1,63 +1,85 @@
--- Script de Roblox para Fly y Noclip con Mando (Gamepad)
--- Controles:
--- Fly: Mantén R1/RB + Presiona X/Cuadrado
--- Noclip: Mantén R1/RB + Presiona B/Círculo
--- Una vez volando:
--- - Stick izquierdo: Movimiento horizontal relativo a la cámara (adelante/atrás/izquierda/derecha)
--- - Gatillo derecho (R2/RT): Subir
--- - Gatillo izquierdo (L2/LT): Bajar
--- Velocidad: 50 (ajustable en la variable 'speed')
-
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
-
 local char = nil
 local rootPart = nil
 local humanoid = nil
 local bodyVelocity = nil
+local bodyGyro = nil
 local flyConnection = nil
 local noclipConnection = nil
-local speed = 50  -- Velocidad de vuelo (ajusta aquí si quieres)
+local flySpeed = 50 -- Velocidad de vuelo (ajusta aquí)
 local isFlying = false
 local isNoclipping = false
 local heldButtons = {}
+local currentVelocity = Vector3.new(0, 0, 0)
+local maxAcceleration = 100 -- No se usa actualmente, pero se puede integrar si es necesario
+local accelerationTime = 0.2
 
--- Función para actualizar el movimiento en vuelo
-local function updateFly()
-    if not char or not rootPart or not bodyVelocity then return end
+-- Función MEJORADA para actualizar el movimiento en vuelo (con aceleración suave y BodyGyro)
+local function updateFly(deltaTime)
+    if not char or not rootPart or not bodyVelocity or not bodyGyro then return end
     local camera = workspace.CurrentCamera
     local gamepadState = UserInputService:GetGamepadState(Enum.UserInputType.Gamepad1)
     if not gamepadState then return end
     
-    local leftThumb = gamepadState.Thumbstick1.Position
-    local localXZ = Vector3.new(leftThumb.X, 0, -leftThumb.Y)
-    local moveXZ = camera.CFrame:VectorToWorldSpace(localXZ)
+    -- Crear un mapa para acceder a los inputs fácilmente
+    local inputs = {}
+    for _, input in ipairs(gamepadState) do
+        inputs[input.KeyCode] = input
+    end
     
-    local rightTrigger = gamepadState.ButtonR2.Position or 0
-    local leftTrigger = gamepadState.ButtonL2.Position or 0
-    local verticalSpeed = (rightTrigger - leftTrigger) * speed
+    -- Thumbstick izquierdo
+    local thumbstick1 = inputs[Enum.KeyCode.Thumbstick1] or {Position = Vector3.new(0, 0, 0)}
+    local leftThumb = thumbstick1.Position
     
-    bodyVelocity.Velocity = moveXZ * speed + Vector3.new(0, verticalSpeed, 0)
+    -- Gatillos (usar .Position.Z para el valor analógico)
+    local rightTrigger = (inputs[Enum.KeyCode.ButtonR2] and inputs[Enum.KeyCode.ButtonR2].Position.Z) or 0
+    local leftTrigger = (inputs[Enum.KeyCode.ButtonL2] and inputs[Enum.KeyCode.ButtonL2].Position.Z) or 0
+    local vertical = (rightTrigger - leftTrigger)  -- -1 a 1, proporcional
+    
+    -- Dirección horizontal relativa a la cámara (corregido el signo para movimiento forward correcto)
+    local localXZ = Vector3.new(leftThumb.X, 0, leftThumb.Y)  -- Cambio: sin negativo en Y para corregir dirección
+    local camLook = camera.CFrame.LookVector
+    local camRight = camera.CFrame.RightVector
+    local horizontal = (camLook * localXZ.Z) + (camRight * localXZ.X)
+    
+    -- Targets separados para horizontal y vertical (proporcional, max flySpeed cada uno)
+    local targetHoriz = horizontal * flySpeed
+    local targetVert = Vector3.new(0, vertical * flySpeed, 0)
+    local targetVelocity = targetHoriz + targetVert
+    
+    -- Aceleración suave con Lerp
+    currentVelocity = currentVelocity:Lerp(targetVelocity, math.min(deltaTime / accelerationTime, 1))
+    
+    bodyVelocity.Velocity = currentVelocity
+    bodyGyro.CFrame = camera.CFrame
 end
 
--- Activar Fly
+-- Activar Fly MEJORADO
 local function enableFly()
     char = player.Character
     if not char then return end
     rootPart = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
     
+    humanoid.PlatformStand = true
+    
     bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     bodyVelocity.Velocity = Vector3.new(0, 0, 0)
     bodyVelocity.Parent = rootPart
     
-    humanoid.PlatformStand = true
-    flyConnection = RunService.Heartbeat:Connect(updateFly)
+    bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bodyGyro.CFrame = rootPart.CFrame
+    bodyGyro.Parent = rootPart
+    
+    currentVelocity = Vector3.new(0, 0, 0)
+    flyConnection = RunService.RenderStepped:Connect(updateFly) -- Más suave con RenderStepped
     isFlying = true
-    print("🛫 Fly ACTIVADO")
+    print("🛫 Fly ACTIVADO (Mejorado con aceleración y giro a cámara)")
 end
 
 -- Desactivar Fly
@@ -70,10 +92,15 @@ local function disableFly()
         bodyVelocity:Destroy()
         bodyVelocity = nil
     end
+    if bodyGyro then
+        bodyGyro:Destroy()
+        bodyGyro = nil
+    end
     if humanoid then
         humanoid.PlatformStand = false
     end
     isFlying = false
+    currentVelocity = Vector3.new(0, 0, 0)
     print("🛬 Fly DESACTIVADO")
 end
 
@@ -86,16 +113,13 @@ local function toggleFly()
     end
 end
 
--- Actualizar Noclip
+-- Noclip MEJORADO (todas las partes descendientes)
 local function updateNoclip()
     if not char then return end
-    for _, part in pairs(char:GetChildren()) do
-        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then  -- Evita root para estabilidad
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
             part.CanCollide = false
         end
-    end
-    if rootPart then
-        rootPart.CanCollide = false
     end
 end
 
@@ -103,14 +127,21 @@ end
 local function enableNoclip()
     noclipConnection = RunService.Stepped:Connect(updateNoclip)
     isNoclipping = true
-    print("👻 Noclip ACTIVADO")
+    print("👻 Noclip ACTIVADO (Mejorado: todas las partes)")
 end
 
--- Desactivar Noclip
+-- Desactivar Noclip (restaura colisiones)
 local function disableNoclip()
     if noclipConnection then
         noclipConnection:Disconnect()
         noclipConnection = nil
+    end
+    if char then
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
     end
     isNoclipping = false
     print("👻 Noclip DESACTIVADO")
@@ -150,14 +181,15 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
     end
 end)
 
--- Manejar respawn del personaje
+-- Manejar respawn del personaje (mejorado: reactiva si estaba on)
 local function onCharacterAdded(newChar)
     char = newChar
     rootPart = newChar:WaitForChild("HumanoidRootPart")
     humanoid = newChar:WaitForChild("Humanoid")
-    -- Desactivar al respawnear
+    -- Desactivar todo al respawnear, pero puedes reactivar manualmente
     disableFly()
     disableNoclip()
+    print("🔄 Personaje respawneado - Reactiva Fly/Noclip con los botones")
 end
 
 player.CharacterAdded:Connect(onCharacterAdded)
@@ -165,5 +197,7 @@ if player.Character then
     onCharacterAdded(player.Character)
 end
 
-print("🎮 Script cargado! Conecta tu mando y usa R1 + X para Fly, R1 + B para Noclip")
-print("Asegúrate de que tu executor soporte UserInputService y RunService.")
+print("🎮 Script MEJORADO cargado! Usa R1 + X para Fly suave, R1 + B para Noclip total")
+print("Mejoras: Aceleración Lerp, BodyGyro (mira cámara), RenderStepped, Noclip en TODAS las partes.")
+print("Correcciones: Acceso correcto a gamepad inputs, signo de movimiento forward, proporcional real en gatillos/stick.")
+print("Asegúrate de que tu executor soporte UserInputService/RunService.")
