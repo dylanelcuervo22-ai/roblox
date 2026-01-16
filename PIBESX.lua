@@ -12,6 +12,7 @@ local noclipConnection = nil
 local jumpConnection = nil
 local flySpeed = 50 -- Velocidad de vuelo (ajusta aquí)
 local JUMP_VELOCITY = 75 -- Altura del salto infinito (ajusta aquí)
+local DEADZONE = 0.20 -- Deadzone del stick izquierdo (anti-drift)
 local isFlying = false
 local isNoclipping = false
 local isInfiniteJump = false
@@ -21,7 +22,7 @@ local accelerationTime = 0.2
 local lastJumpToggle = 0
 local JUMP_DEBOUNCE = 0.3
 
--- Función MEJORADA para actualizar el movimiento en vuelo (velocidad constante)
+-- Función MEJORADA para actualizar el movimiento en vuelo (con DEADZONE 0.20 en stick L)
 local function updateFly(deltaTime)
     if not char or not rootPart or not bodyVelocity or not bodyGyro then return end
     local camera = workspace.CurrentCamera
@@ -34,9 +35,16 @@ local function updateFly(deltaTime)
         inputs[input.KeyCode] = input
     end
     
-    -- Thumbstick izquierdo
+    -- Thumbstick izquierdo CON DEADZONE
     local thumbstick1 = inputs[Enum.KeyCode.Thumbstick1] or {Position = Vector3.new(0, 0, 0)}
     local leftThumb = thumbstick1.Position
+    local mag = leftThumb.Magnitude
+    if mag > DEADZONE then
+        local scaledMag = (mag - DEADZONE) / (1 - DEADZONE)
+        leftThumb = leftThumb.Unit * scaledMag
+    else
+        leftThumb = Vector3.new(0, 0, 0)
+    end
     
     -- Gatillos analógicos (Z = 0-1)
     local rightTrigger = (inputs[Enum.KeyCode.ButtonR2] and inputs[Enum.KeyCode.ButtonR2].Position.Z) or 0
@@ -83,7 +91,7 @@ local function enableFly()
     currentVelocity = Vector3.new(0, 0, 0)
     flyConnection = RunService.RenderStepped:Connect(updateFly)
     isFlying = true
-    print("🛫 Fly ACTIVADO (Mejorado con aceleración suave y velocidad constante)")
+    print("🛫 Fly ACTIVADO (con DEADZONE 0.20 anti-drift, aceleración suave y velocidad constante)")
 end
 
 -- Desactivar Fly
@@ -241,7 +249,7 @@ if player.Character then
 end
 
 print("🎮 Script ULTRA MEJORADO cargado!")
-print("Controles: R1 + X (Fly suave con cámara), R1 + B (Noclip total), R1 + Y (Triángulo/Y - Infinite Jump alto)")
-print("Fly: Stick L (mover con cámara), R2 sube, L2 baja. Velocidad capada 50.")
-print("Infinite Jump: Actívalo con R1+Y, luego presiona A/Cruz para saltar INFINITAMENTE (incluso en aire). Usa AssemblyLinearVelocity (funciona en todos los juegos).")
+print("Controles: R1 + X (Fly suave con DEADZONE 0.20 anti-drift), R1 + B (Noclip total), R1 + Y (Triángulo/Y - Infinite Jump alto)")
+print("Fly: Stick L (mover con cámara, deadzone 0.20), R2 sube, L2 baja. Velocidad capada 50.")
+print("Infinite Jump: Actívalo con R1+Y, luego presiona A/Cruz para saltar INFINITAMENTE (incluso en aire). Usa AssemblyLinearVelocity.")
 print("Executor debe soportar UserInputService/RunService.")
