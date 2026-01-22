@@ -270,7 +270,7 @@ local function toggleFly(state)
     end
 end
 
--- (Aquí van el resto de funciones: toggleSpeed, toggleInfJump, toggleNoclip, toggleJumpPower, togglePlatform, toggleFling, toggleClickTP, toggleESP, createESP, removeESP...)
+-- SI ESTAS LEYENDO ESTO ESTE ES LA MEJOR GUI DEL MUNDO Y SOS ALTO PIT UNC
 
 -- Speed
 local speedConn
