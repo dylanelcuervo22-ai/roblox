@@ -273,10 +273,33 @@ end
 -- (Aquí van el resto de funciones: toggleSpeed, toggleInfJump, toggleNoclip, toggleJumpPower, togglePlatform, toggleFling, toggleClickTP, toggleESP, createESP, removeESP...)
 
 -- Speed
+local speedConn
+
 local function toggleSpeed(state)
     states.speed = state
     local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    if hum then hum.WalkSpeed = state and values.walkSpeed or 16 end
+    if not hum then return end
+
+    -- cortar conexión anterior
+    if speedConn then
+        speedConn:Disconnect()
+        speedConn = nil
+    end
+
+    if state then
+        hum.WalkSpeed = values.walkSpeed
+
+        -- FORZAR SPEED constantemente
+        speedConn = RunService.Heartbeat:Connect(function()
+            if hum and hum.Parent then
+                if hum.WalkSpeed ~= values.walkSpeed then
+                    hum.WalkSpeed = values.walkSpeed
+                end
+            end
+        end)
+    else
+        hum.WalkSpeed = 16
+    end
 end
 
 -- Infinite Jump
