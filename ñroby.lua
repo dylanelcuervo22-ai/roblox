@@ -391,6 +391,9 @@ end
 
 -- Fling
 local flingConn
+local spinAV
+local spinAttachment
+
 local function toggleFling(state)
     states.fling = state
 
@@ -405,17 +408,41 @@ local function toggleFling(state)
     if not (root and hum) then return end
 
     if state then
+        -- Network ownership
         pcall(function()
             root:SetNetworkOwner(player)
         end)
 
+        -- Attachment
+        spinAttachment = root:FindFirstChild("SpinAttachment")
+        if not spinAttachment then
+            spinAttachment = Instance.new("Attachment")
+            spinAttachment.Name = "SpinAttachment"
+            spinAttachment.Parent = root
+        end
+
+        -- AngularVelocity (spin estable)
+        spinAV = Instance.new("AngularVelocity")
+        spinAV.Attachment0 = spinAttachment
+        spinAV.MaxTorque = math.huge
+        spinAV.AngularVelocity = Vector3.new(0, 250, 0) -- 🔥 velocidad del spin
+        spinAV.Parent = root
+
+        -- Mantener estabilidad
         flingConn = RunService.Heartbeat:Connect(function()
-            root.AssemblyAngularVelocity = Vector3.new(0, 5000, 0)
-            root.AssemblyLinearVelocity  = Vector3.new(0, 0, 0)
+            root.AssemblyLinearVelocity = Vector3.zero
         end)
     else
-        root.AssemblyAngularVelocity = Vector3.new()
-        root.AssemblyLinearVelocity  = Vector3.new()
+        if spinAV then
+            spinAV:Destroy()
+            spinAV = nil
+        end
+        if spinAttachment then
+            spinAttachment:Destroy()
+            spinAttachment = nil
+        end
+        root.AssemblyAngularVelocity = Vector3.zero
+        root.AssemblyLinearVelocity  = Vector3.zero
     end
 end
 
