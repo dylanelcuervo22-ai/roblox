@@ -270,7 +270,7 @@ local function toggleFly(state)
     end
 end
 
--- SI ESTAS LEYENDO ESTO ESTE ES LA MEJOR GUI DEL MUNDO Y SOS ALTO PIT UNC
+-- (Aquí van el resto de funciones: toggleSpeed, toggleInfJump, toggleNoclip, toggleJumpPower, togglePlatform, toggleFling, toggleClickTP, toggleESP, createESP, removeESP...)
 
 -- Speed
 local speedConn
@@ -604,12 +604,60 @@ local function toggleESP(state)
     end)
 end
 
+local function cleanupMovement()
+    -- FLY
+    if connections.fly then
+        connections.fly:Disconnect()
+        connections.fly = nil
+    end
+
+    if bodyVel then bodyVel:Destroy() bodyVel = nil end
+    if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
+    currentVel = Vector3.zero
+    states.fly = false
+
+    -- NOCLIP
+    if noclipConn then
+        noclipConn:Disconnect()
+        noclipConn = nil
+    end
+    states.noclip = false
+
+    local char = player.Character
+    if char then
+        for _, part in ipairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+end
+
+local function hookDeath(char)
+    local hum = char:WaitForChild("Humanoid")
+
+    hum.Died:Connect(function()
+        cleanupMovement()
+    end)
+end
+
+if player.Character then
+    hookDeath(player.Character)
+end
+
+player.CharacterAdded:Connect(hookDeath)
+
 -- Respawn handler
 player.CharacterAdded:Connect(function(char)
     task.wait(0.6)
+
     local hum = char:WaitForChild("Humanoid", 5)
     if not hum then return end
 
+    -- estado válido SIEMPRE
+    hum:ChangeState(Enum.HumanoidStateType.Running)
+
+    -- reaplicar cosas activas
     if states.speed     then toggleSpeed(true)     end
     if states.jumpPower then toggleJumpPower(true) end
     if states.fly       then toggleFly(true)       end
