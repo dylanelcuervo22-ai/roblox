@@ -363,12 +363,53 @@ local function toggleNoclip(state)
     end
 end
 
--- JumpPower
-local function toggleJumpPower(state)
-    states.jumpPower = state
-    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    if hum then hum.JumpPower = state and values.jumpPower or 50 end
+-- JumpPower Forzado Permanente
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local DEFAULT_JUMP = 50
+
+local function applyJumpPower(hum)
+	if not hum then return end
+	
+	hum.UseJumpPower = true -- forzamos que use JumpPower
+	
+	task.spawn(function()
+		while states.jumpPower and hum and hum.Parent do
+			if hum.JumpPower ~= values.jumpPower then
+				hum.JumpPower = values.jumpPower
+			end
+			task.wait()
+		end
+		
+		-- cuando se desactiva
+		if hum and hum.Parent then
+			hum.JumpPower = DEFAULT_JUMP
+		end
+	end)
 end
+
+local function toggleJumpPower(state)
+	states.jumpPower = state
+	
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:WaitForChild("Humanoid")
+	
+	if state then
+		applyJumpPower(hum)
+	else
+		hum.JumpPower = DEFAULT_JUMP
+	end
+end
+
+-- Reaplicar cuando respawnea
+player.CharacterAdded:Connect(function(char)
+	local hum = char:WaitForChild("Humanoid")
+	if states.jumpPower then
+		applyJumpPower(hum)
+	end
+end)
 
 -- Platform
 local platformPart
