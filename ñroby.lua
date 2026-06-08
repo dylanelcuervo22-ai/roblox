@@ -454,61 +454,95 @@ local function togglePlatform(state)
 end
 
 -- Fling
+
+-- Fling Mejorado
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+
 local flingConn
 local spinAV
 local spinAttachment
 
 local function toggleFling(state)
-    states.fling = state
-
     if flingConn then
         flingConn:Disconnect()
         flingConn = nil
     end
 
+    if spinAV then
+        spinAV:Destroy()
+        spinAV = nil
+    end
+
+    if spinAttachment then
+        spinAttachment:Destroy()
+        spinAttachment = nil
+    end
+
     local char = player.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if not (root and hum) then return end
+    if not char then return end
+
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+
+    if not (root and hum) then
+        return
+    end
 
     if state then
-        -- Network ownership
-        pcall(function()
-            root:SetNetworkOwner(player)
-        end)
+        -- Physics state
+        hum:ChangeState(Enum.HumanoidStateType.Physics)
 
         -- Attachment
-        spinAttachment = root:FindFirstChild("SpinAttachment")
-        if not spinAttachment then
-            spinAttachment = Instance.new("Attachment")
-            spinAttachment.Name = "SpinAttachment"
-            spinAttachment.Parent = root
-        end
+        spinAttachment = Instance.new("Attachment")
+        spinAttachment.Name = "SpinAttachment"
+        spinAttachment.Parent = root
 
-        -- AngularVelocity (spin estable)
+        -- AngularVelocity
         spinAV = Instance.new("AngularVelocity")
         spinAV.Attachment0 = spinAttachment
-        spinAV.MaxTorque = math.huge
-        spinAV.AngularVelocity = Vector3.new(0, 250, 0) -- 🔥 velocidad del spin
+        spinAV.RelativeTo = Enum.ActuatorRelativeTo.World
+        spinAV.MaxTorque = 1e9
+        spinAV.AngularVelocity = Vector3.new(0, 1000, 0)
         spinAV.Parent = root
 
-        -- Mantener estabilidad
+        -- Mantener spin y generar movimiento pequeño
         flingConn = RunService.Heartbeat:Connect(function()
-            root.AssemblyLinearVelocity = Vector3.zero
+            if not root.Parent then
+                toggleFling(false)
+                return
+            end
+
+            local t = tick() * 25
+
+            root.AssemblyLinearVelocity = Vector3.new(
+                math.cos(t) * 10,
+                0,
+                math.sin(t) * 10
+            )
+
+            root.CFrame *= CFrame.Angles(
+                0,
+                math.rad(20),
+                0
+            )
         end)
+
     else
-        if spinAV then
-            spinAV:Destroy()
-            spinAV = nil
-        end
-        if spinAttachment then
-            spinAttachment:Destroy()
-            spinAttachment = nil
-        end
         root.AssemblyAngularVelocity = Vector3.zero
-        root.AssemblyLinearVelocity  = Vector3.zero
+        root.AssemblyLinearVelocity = Vector3.zero
+
+        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
 end
+
+-- Desactivar al respawnear
+player.CharacterAdded:Connect(function()
+    toggleFling(false)
+end)
 
 -- Click TP
 local clickTpConn
