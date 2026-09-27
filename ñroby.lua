@@ -1,64 +1,187 @@
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
+local Players=game:GetService("Players")
+local UserInputService=game:GetService("UserInputService")
+local RunService=game:GetService("RunService")
+local TweenService=game:GetService("TweenService")
 
-local player = Players.LocalPlayer
-local Mouse = player:GetMouse()
+local player=Players.LocalPlayer
+local Mouse=player:GetMouse()
 
--- GUI
-local sg = Instance.new("ScreenGui")
-sg.Name = "ÑrobyGUI"
-sg.ResetOnSpawn = false
-sg.Parent = player:WaitForChild("PlayerGui",10)
+local sg=Instance.new("ScreenGui")
+sg.Name="ÑrobyGUI"
+sg.ResetOnSpawn=false
+sg.Parent=player:WaitForChild("PlayerGui",10)
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,400,0,350)
-frame.Position = UDim2.new(0.5,-200,0.12,0)
-frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-frame.BorderSizePixel = 0
-frame.Visible = false
-frame.Parent = sg
+local frame=Instance.new("Frame")
+frame.Size=UDim2.new(0,400,0,350)
+frame.Position=UDim2.new(.5,-200,.12,0)
+frame.BackgroundColor3=Color3.fromRGB(0,0,0)
+frame.BorderSizePixel=0
+frame.Visible=false
+frame.Parent=sg
 
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0,12)
-uiCorner.Parent = frame
+local uiCorner=Instance.new("UICorner")
+uiCorner.CornerRadius=UDim.new(0,12)
+uiCorner.Parent=frame
 
-local uiStroke = Instance.new("UIStroke")
-uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-uiStroke.Color = Color3.new(1,1,1)
-uiStroke.Thickness = 2
-uiStroke.Parent = frame
+local uiStroke=Instance.new("UIStroke")
+uiStroke.ApplyStrokeMode=Enum.ApplyStrokeMode.Border
+uiStroke.Color=Color3.new(1,1,1)
+uiStroke.Thickness=2
+uiStroke.Parent=frame
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,36)
-title.BackgroundTransparency = 1
-title.Text = "ñroby"
-title.TextColor3 = Color3.new(0,0,0)
-title.TextSize = 32
-title.Font = Enum.Font.FredokaOne
-title.TextStrokeTransparency = .5
-title.Parent = frame
+local title=Instance.new("TextLabel")
+title.Size=UDim2.new(1,0,0,36)
+title.BackgroundTransparency=1
+title.Text="ñroby"
+title.TextColor3=Color3.new(0,0,0)
+title.TextSize=32
+title.Font=Enum.Font.FredokaOne
+title.TextStrokeTransparency=.5
+title.Parent=frame
 
-local chromaConn = RunService.RenderStepped:Connect(function()
+local chromaConn=RunService.RenderStepped:Connect(function()
     if not title.Parent then
         chromaConn:Disconnect()
         return
     end
-    local c = Color3.fromHSV((tick()*.5)%1,1,1)
-    title.TextStrokeColor3 = c
-    uiStroke.Color = c
+    local c=Color3.fromHSV((tick()*.5)%1,1,1)
+    title.TextStrokeColor3=c
+    uiStroke.Color=c
 end)
 
-local close = Instance.new("TextButton")
-close.Size = UDim2.new(0,30,0,30)
-close.Position = UDim2.new(1,-36,0,3)
-close.BackgroundTransparency = 1
-close.Text = "X"
-close.TextColor3 = Color3.fromRGB(240,80,80)
-close.TextSize = 20
-close.Font = Enum.Font.SourceSansBold
-close.Parent = frame
+local guiHidden=false
+local guiAnimating=false
+local originalFrameSize=frame.Size
+local originalFramePosition=frame.Position
+
+local minimize=Instance.new("TextButton")
+minimize.Size=UDim2.new(0,30,0,30)
+minimize.Position=UDim2.new(1,-70,0,3)
+minimize.BackgroundTransparency=1
+minimize.Text="-"
+minimize.TextColor3=Color3.fromRGB(220,220,220)
+minimize.TextSize=24
+minimize.Font=Enum.Font.SourceSansBold
+minimize.Parent=frame
+
+local close=Instance.new("TextButton")
+close.Size=UDim2.new(0,30,0,30)
+close.Position=UDim2.new(1,-36,0,3)
+close.BackgroundTransparency=1
+close.Text="X"
+close.TextColor3=Color3.fromRGB(240,80,80)
+close.TextSize=20
+close.Font=Enum.Font.SourceSansBold
+close.Parent=frame
+
+local function setGuiHidden(hidden)
+    if guiAnimating or not frame.Parent then return end
+    if hidden==guiHidden then return end
+
+    guiAnimating=true
+    guiHidden=hidden
+
+    if hidden then
+        originalFrameSize=frame.Size
+        originalFramePosition=frame.Position
+        frame.ClipsDescendants=true
+
+        TweenService:Create(
+            frame,
+            TweenInfo.new(.35,Enum.EasingStyle.Quart,Enum.EasingDirection.In),
+            {
+                Position=UDim2.new(
+                    originalFramePosition.X.Scale,
+                    originalFramePosition.X.Offset,
+                    originalFramePosition.Y.Scale,
+                    originalFramePosition.Y.Offset-35
+                ),
+                Size=UDim2.new(
+                    originalFrameSize.X.Scale,
+                    originalFrameSize.X.Offset,
+                    0,
+                    0
+                ),
+                BackgroundTransparency=1
+            }
+        ):Play()
+
+        TweenService:Create(
+            uiStroke,
+            TweenInfo.new(.25),
+            {Transparency=1}
+        ):Play()
+
+        TweenService:Create(
+            title,
+            TweenInfo.new(.25),
+            {TextTransparency=1,TextStrokeTransparency=1}
+        ):Play()
+    else
+        frame.Size=UDim2.new(
+            originalFrameSize.X.Scale,
+            originalFrameSize.X.Offset,
+            0,
+            0
+        )
+
+        frame.Position=UDim2.new(
+            originalFramePosition.X.Scale,
+            originalFramePosition.X.Offset,
+            originalFramePosition.Y.Scale,
+            originalFramePosition.Y.Offset-35
+        )
+
+        frame.BackgroundTransparency=1
+        uiStroke.Transparency=1
+        title.TextTransparency=1
+        title.TextStrokeTransparency=1
+
+        TweenService:Create(
+            frame,
+            TweenInfo.new(.45,Enum.EasingStyle.Back,Enum.EasingDirection.Out),
+            {
+                Position=originalFramePosition,
+                Size=originalFrameSize,
+                BackgroundTransparency=0
+            }
+        ):Play()
+
+        TweenService:Create(
+            uiStroke,
+            TweenInfo.new(.35),
+            {Transparency=0}
+        ):Play()
+
+        TweenService:Create(
+            title,
+            TweenInfo.new(.35),
+            {TextTransparency=0,TextStrokeTransparency=.5}
+        ):Play()
+
+        task.delay(.45,function()
+            if frame.Parent then
+                frame.ClipsDescendants=false
+            end
+        end)
+    end
+
+    task.delay(.5,function()
+        guiAnimating=false
+    end)
+end
+
+minimize.MouseButton1Click:Connect(function()
+    setGuiHidden(true)
+end)
+
+UserInputService.InputBegan:Connect(function(input,gp)
+    if gp then return end
+
+    if input.KeyCode==Enum.KeyCode.RightShift then
+        setGuiHidden(not guiHidden)
+    end
+end)
 
 close.MouseButton1Click:Connect(function()
     if chromaConn then chromaConn:Disconnect() end
@@ -69,72 +192,77 @@ end)
 local dragging,dragStart,startPos
 
 title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = frame.Position
+    if input.UserInputType==Enum.UserInputType.MouseButton1 then
+        dragging=true
+        dragStart=input.Position
+        startPos=frame.Position
     end
 end)
 
 title.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
+    if input.UserInputType==Enum.UserInputType.MouseButton1 then
+        dragging=false
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local d = input.Position-dragStart
-        frame.Position = UDim2.new(
+    if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
+        local d=input.Position-dragStart
+        frame.Position=UDim2.new(
             startPos.X.Scale,startPos.X.Offset+d.X,
             startPos.Y.Scale,startPos.Y.Offset+d.Y
         )
+        if not guiHidden then
+            originalFramePosition=frame.Position
+        end
     end
 end)
 
 -- LOADING
-local loadingFrame = Instance.new("Frame")
-loadingFrame.Size = UDim2.new(1,0,1,0)
-loadingFrame.BackgroundColor3 = Color3.new(0,0,0)
-loadingFrame.BackgroundTransparency = 1
-loadingFrame.ZIndex = 100
-loadingFrame.Parent = sg
+local loadingFrame=Instance.new("Frame")
+loadingFrame.Size=UDim2.new(1,0,1,0)
+loadingFrame.BackgroundColor3=Color3.new(0,0,0)
+loadingFrame.BackgroundTransparency=1
+loadingFrame.ZIndex=100
+loadingFrame.Parent=sg
 
-local loadingContainer = Instance.new("Frame")
-loadingContainer.Size = UDim2.new(1,0,1,0)
-loadingContainer.BackgroundTransparency = 1
-loadingContainer.Parent = loadingFrame
+local loadingContainer=Instance.new("Frame")
+loadingContainer.Size=UDim2.new(1,0,1,0)
+loadingContainer.BackgroundTransparency=1
+loadingContainer.Parent=loadingFrame
 
-local words = {}
+local words={}
 
 for i=1,140 do
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(0,200+math.random(-60,60),0,100+math.random(-30,30))
-    lbl.Position = UDim2.new(
+    local lbl=Instance.new("TextLabel")
+    lbl.Size=UDim2.new(0,200+math.random(-60,60),0,100+math.random(-30,30))
+    lbl.Position=UDim2.new(
         math.random(),math.random(-150,150),
         math.random(),math.random(-150,150)
     )
-    lbl.BackgroundTransparency = 1
-    lbl.Text = "ñroby"
-    lbl.TextColor3 = Color3.new(1,1,1)
-    lbl.TextTransparency = 1
-    lbl.TextStrokeTransparency = .6
-    lbl.Font = Enum.Font.Cartoon
-    lbl.TextSize = 70+math.random(-20,30)
-    lbl.Rotation = math.random(-20,20)
-    lbl.ZIndex = 101
-    lbl.Parent = loadingContainer
+    lbl.BackgroundTransparency=1
+    lbl.Text="ñroby"
+    lbl.TextColor3=Color3.new(1,1,1)
+    lbl.TextTransparency=1
+    lbl.TextStrokeTransparency=.6
+    lbl.Font=Enum.Font.Cartoon
+    lbl.TextSize=70+math.random(-20,30)
+    lbl.Rotation=math.random(-20,20)
+    lbl.ZIndex=101
+    lbl.Parent=loadingContainer
     table.insert(words,lbl)
 end
 
-local loadingChromaConn = RunService.RenderStepped:Connect(function()
+local loadingChromaConn=RunService.RenderStepped:Connect(function()
     if not loadingFrame.Parent then
         loadingChromaConn:Disconnect()
         return
     end
-    local c = Color3.fromHSV((tick()*.8)%1,1,1)
+
+    local c=Color3.fromHSV((tick()*.8)%1,1,1)
+
     for _,lbl in ipairs(words) do
-        lbl.TextStrokeColor3 = c
+        lbl.TextStrokeColor3=c
     end
 end)
 
@@ -148,6 +276,7 @@ local function startLoadingAnimation()
     for i,lbl in ipairs(words) do
         task.delay(i*.012,function()
             if not lbl.Parent then return end
+
             TweenService:Create(
                 lbl,
                 TweenInfo.new(1.3,Enum.EasingStyle.Back,Enum.EasingDirection.Out),
@@ -191,20 +320,24 @@ local function endLoadingAnimation()
         end
 
         loadingFrame:Destroy()
-        frame.Visible = true
-
-        frame.Position = UDim2.new(.5,-200,-.6,0)
+        frame.Visible=true
+        frame.Position=UDim2.new(.5,-200,-.6,0)
+        originalFramePosition=frame.Position
 
         TweenService:Create(
             frame,
             TweenInfo.new(1.4,Enum.EasingStyle.Back,Enum.EasingDirection.Out),
             {Position=UDim2.new(.5,-200,.12,0)}
         ):Play()
+
+        task.delay(1.4,function()
+            originalFramePosition=frame.Position
+        end)
     end)
 end
 
 -- ESTADOS
-local states = {
+local states={
     fly=false,
     vehicleFly=false,
     vehicleNoclip=false,
@@ -218,20 +351,20 @@ local states = {
     clicktp=false
 }
 
-local values = {
+local values={
     flySpeed=50,
     vehicleFlySpeed=80,
     walkSpeed=32,
     jumpPower=50
 }
 
-local connections = {}
+local connections={}
 
 local bodyVel
 local bodyGyro
-local currentVel = Vector3.zero
+local currentVel=Vector3.zero
 
-local keys = {
+local keys={
     W=false,
     A=false,
     S=false,
@@ -242,81 +375,85 @@ local keys = {
 
 UserInputService.InputBegan:Connect(function(input,gp)
     if gp then return end
-    local k = input.KeyCode.Name
-    if keys[k] ~= nil then
-        keys[k] = true
+
+    local k=input.KeyCode.Name
+
+    if keys[k]~=nil then
+        keys[k]=true
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input,gp)
     if gp then return end
-    local k = input.KeyCode.Name
-    if keys[k] ~= nil then
-        keys[k] = false
+
+    local k=input.KeyCode.Name
+
+    if keys[k]~=nil then
+        keys[k]=false
     end
 end)
 
 -- FLY
 local function updateFly()
-    local root = player.Character
+    local root=player.Character
         and player.Character:FindFirstChild("HumanoidRootPart")
 
     if not root or not states.fly then return end
 
-    local cam = workspace.CurrentCamera
+    local cam=workspace.CurrentCamera
     if not cam then return end
 
-    local dir = Vector3.zero
+    local dir=Vector3.zero
 
-    if keys.W then dir += cam.CFrame.LookVector end
-    if keys.S then dir -= cam.CFrame.LookVector end
-    if keys.A then dir -= cam.CFrame.RightVector end
-    if keys.D then dir += cam.CFrame.RightVector end
+    if keys.W then dir+=cam.CFrame.LookVector end
+    if keys.S then dir-=cam.CFrame.LookVector end
+    if keys.A then dir-=cam.CFrame.RightVector end
+    if keys.D then dir+=cam.CFrame.RightVector end
 
-    if dir.Magnitude > 0 then
-        dir = dir.Unit
+    if dir.Magnitude>0 then
+        dir=dir.Unit
     end
 
-    currentVel = currentVel:Lerp(
+    currentVel=currentVel:Lerp(
         dir*values.flySpeed,.15
     )
 
     if bodyVel then
-        bodyVel.Velocity = currentVel
+        bodyVel.Velocity=currentVel
     end
 
     if bodyGyro then
-        bodyGyro.CFrame = cam.CFrame
+        bodyGyro.CFrame=cam.CFrame
     end
 end
 
 local function toggleFly(state)
-    states.fly = state
+    states.fly=state
 
-    local char = player.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    local hum = char and char:FindFirstChild("Humanoid")
+    local char=player.Character
+    local root=char and char:FindFirstChild("HumanoidRootPart")
+    local hum=char and char:FindFirstChild("Humanoid")
 
     if not(root and hum) then return end
 
     if state then
         hum:ChangeState(Enum.HumanoidStateType.Physics)
 
-        bodyVel = Instance.new("BodyVelocity")
-        bodyVel.MaxForce = Vector3.new(99999,99999,99999)
-        bodyVel.Velocity = Vector3.zero
-        bodyVel.Parent = root
+        bodyVel=Instance.new("BodyVelocity")
+        bodyVel.MaxForce=Vector3.new(99999,99999,99999)
+        bodyVel.Velocity=Vector3.zero
+        bodyVel.Parent=root
 
-        bodyGyro = Instance.new("BodyGyro")
-        bodyGyro.MaxTorque = Vector3.new(4000,4000,4000)
-        bodyGyro.P = 12500
-        bodyGyro.D = 1000
-        bodyGyro.Parent = root
+        bodyGyro=Instance.new("BodyGyro")
+        bodyGyro.MaxTorque=Vector3.new(4000,4000,4000)
+        bodyGyro.P=12500
+        bodyGyro.D=1000
+        bodyGyro.Parent=root
 
-        currentVel = Vector3.zero
+        currentVel=Vector3.zero
 
         if not connections.fly then
-            connections.fly = RunService.Heartbeat:Connect(updateFly)
+            connections.fly=RunService.Heartbeat:Connect(updateFly)
         end
     else
         if bodyVel then
@@ -329,7 +466,7 @@ local function toggleFly(state)
             bodyGyro=nil
         end
 
-        currentVel = Vector3.zero
+        currentVel=Vector3.zero
 
         if connections.fly then
             connections.fly:Disconnect()
@@ -344,17 +481,17 @@ end
 local vehicleFlyConn
 local vehicleBodyVelocity
 local vehicleBodyGyro
-local currentVehicleVel = Vector3.zero
+local currentVehicleVel=Vector3.zero
 local vehicleFlyRoot
 
 local function getVehicle()
-    local char = player.Character
+    local char=player.Character
     if not char then return nil end
 
-    local hum = char:FindFirstChildOfClass("Humanoid")
+    local hum=char:FindFirstChildOfClass("Humanoid")
     if not hum then return nil end
 
-    local seat = hum.SeatPart
+    local seat=hum.SeatPart
     if not seat then return nil end
 
     if not seat:IsA("VehicleSeat")
@@ -362,10 +499,10 @@ local function getVehicle()
         return nil
     end
 
-    local vehicle = seat:FindFirstAncestorOfClass("Model")
+    local vehicle=seat:FindFirstAncestorOfClass("Model")
     if not vehicle then return nil end
 
-    local root =
+    local root=
         vehicle.PrimaryPart
         or vehicle:FindFirstChild("VehicleSeat",true)
         or seat
@@ -408,18 +545,14 @@ local function setupVehicleFly(root)
 
     vehicleBodyVelocity=Instance.new("BodyVelocity")
     vehicleBodyVelocity.Name="ÑrobyVehicleVelocity"
-    vehicleBodyVelocity.MaxForce=Vector3.new(
-        1000000,1000000,1000000
-    )
+    vehicleBodyVelocity.MaxForce=Vector3.new(1000000,1000000,1000000)
     vehicleBodyVelocity.P=10000
     vehicleBodyVelocity.Velocity=Vector3.zero
     vehicleBodyVelocity.Parent=root
 
     vehicleBodyGyro=Instance.new("BodyGyro")
     vehicleBodyGyro.Name="ÑrobyVehicleGyro"
-    vehicleBodyGyro.MaxTorque=Vector3.new(
-        1000000,1000000,1000000
-    )
+    vehicleBodyGyro.MaxTorque=Vector3.new(1000000,1000000,1000000)
     vehicleBodyGyro.P=10000
     vehicleBodyGyro.D=1000
     vehicleBodyGyro.CFrame=root.CFrame
@@ -441,7 +574,6 @@ local function updateVehicleFly()
         or not vehicleBodyVelocity.Parent
         or not vehicleBodyGyro
         or not vehicleBodyGyro.Parent then
-
         setupVehicleFly(root)
     end
 
@@ -469,37 +601,19 @@ local function updateVehicleFly()
 
     local direction=Vector3.zero
 
-    if keys.W then
-        direction+=horizontalLook
-    end
-
-    if keys.S then
-        direction-=horizontalLook
-    end
-
-    if keys.D then
-        direction+=horizontalRight
-    end
-
-    if keys.A then
-        direction-=horizontalRight
-    end
-
-    if keys.Q then
-        direction+=Vector3.new(0,1,0)
-    end
-
-    if keys.E then
-        direction-=Vector3.new(0,1,0)
-    end
+    if keys.W then direction+=horizontalLook end
+    if keys.S then direction-=horizontalLook end
+    if keys.D then direction+=horizontalRight end
+    if keys.A then direction-=horizontalRight end
+    if keys.Q then direction+=Vector3.new(0,1,0) end
+    if keys.E then direction-=Vector3.new(0,1,0) end
 
     if direction.Magnitude>0 then
         direction=direction.Unit
     end
 
     currentVehicleVel=currentVehicleVel:Lerp(
-        direction*values.vehicleFlySpeed,
-        .20
+        direction*values.vehicleFlySpeed,.20
     )
 
     vehicleBodyVelocity.Velocity=currentVehicleVel
@@ -1046,6 +1160,7 @@ local function toggleESP(state)
 
             if objs.billboard then
                 local s=math.clamp(1-(dist/500),.35,1)
+
                 objs.billboard.Size=UDim2.new(
                     0,math.floor(200*s),
                     0,math.floor(40*s)
@@ -1189,16 +1304,8 @@ player.CharacterAdded:Connect(function(char)
     if states.fling then toggleFling(true) end
     if states.esp then toggleESP(true) end
     if states.clicktp then toggleClickTP(true) end
-
-    -- Vehicle Fly queda listo para volver a funcionar
-    -- cuando vuelvas a sentarte en un vehículo.
-    if states.vehicleFly then
-        toggleVehicleFly(true)
-    end
-
-    if states.vehicleNoclip then
-        toggleVehicleNoclip(true)
-    end
+    if states.vehicleFly then toggleVehicleFly(true) end
+    if states.vehicleNoclip then toggleVehicleNoclip(true) end
 end)
 
 -- CONTROLES
@@ -1332,7 +1439,6 @@ createToggle("Fling",210,190,toggleFling,false)
 createToggle("ESP",20,226,toggleESP,false)
 createToggle("Click TP",210,226,toggleClickTP,false)
 
--- VEHÍCULOS
 createToggle(
     "Vehicle Fly",
     20,262,
@@ -1358,7 +1464,6 @@ createBox(
 
 -- START
 startLoadingAnimation()
-
 task.delay(2.8,endLoadingAnimation)
 
 print("Disfruta unc")
